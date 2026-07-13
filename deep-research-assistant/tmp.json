@@ -1,0 +1,28 @@
+{
+  "todos": [
+    {
+      "content": "规划：保存问题、撰写调研计划",
+      "status": "in_progress"
+    },
+    {
+      "content": "调研：委派调研员搜索2023年各省GDP数据",
+      "status": "pending"
+    },
+    {
+      "content": "分析：委派分析师计算六省GDP总和、占比及增速排名",
+      "status": "pending"
+    },
+    {
+      "content": "起草：撰写报告草稿",
+      "status": "pending"
+    },
+    {
+      "content": "审阅：委派编辑审稿",
+      "status": "pending"
+    },
+    {
+      "content": "定稿：保存最终报告",
+      "status": "pending"
+    }
+  ]
+}
