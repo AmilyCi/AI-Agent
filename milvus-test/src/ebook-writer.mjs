@@ -99,7 +99,7 @@ async function insertChunksBatch(chunks, bookId, chapterNum){
                     id: `${bookId}_${chapterNum}_${chunkIndex}`,
                     book_id: bookId,
                     book_name: EBOOK_NAME,
-                    chapter_name: chapterNum,
+                    chapter_num: chapterNum,
                     index: chunkIndex,
                     content: chunk,
                     vector: vector
@@ -139,7 +139,7 @@ async function loadAndProcessEPubStreaming(bookId) {
 
         // 创建文本拆分器，拆分到500个字符
         const textSplitter = new RecursiveCharacterTextSplitter({
-            chunSize: CHUNK_SIZE,
+            chunkSize: CHUNK_SIZE,
             chunkOverlap: 50 // 重叠 50 个字符，保证上下文连贯性
         })
 

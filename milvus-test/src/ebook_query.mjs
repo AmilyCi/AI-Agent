@@ -52,7 +52,7 @@ async function main() {
             vector: queryVector,
             limit: 3,
             metric_type: MetricType.COSINE,
-            output_fields: ['id', 'book_id', 'chapter_name', 'index', 'content']
+            output_fields: ['id', 'book_id', 'chapter_num', 'index', 'content']
         })
 
         console.log(`Found ${searchResult.results.length} results:\n`)
@@ -60,7 +60,7 @@ async function main() {
             console.log(`${index + 1}.[Score: ${item.score.toFixed(4)}]`)
             console.log(`   ID: ${item.id}`)
             console.log(`   Book ID: ${item.book_id}`);
-            console.log(`   Chapter: 第 ${item.chapter_name} 章`);
+            console.log(`   Chapter: 第 ${item.chapter_num} 章`);
             console.log(`   Index: ${item.index}`);
             console.log(`   Content: ${item.content}\n`);
         })

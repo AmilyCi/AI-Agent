@@ -46,7 +46,7 @@ async function retrieveRelevantContent(question, k=3){
             vector: queryVector,
             limit: k,
             metric_type: MetricType.COSINE,
-            output_fields: ['id', 'book_id', 'chapter_name', 'index', 'content']
+            output_fields: ['id', 'book_id', 'chapter_num', 'index', 'content']
         })
 
         return searchResult.results
