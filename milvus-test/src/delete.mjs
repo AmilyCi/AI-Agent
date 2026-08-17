@@ -18,8 +18,8 @@ async function main() {
        const deleteId = 'diary_005'
 
        const result = await client.delete({
-        collection_name: COLLECTION_NAME,
-        filter: `id ==="${deleteId}"`
+          collection_name: COLLECTION_NAME,
+          filter: `id ==="${deleteId}"`
        })
 
        console.log(`✔️ Deleted ${result.delete_cnt} record(s)`)
