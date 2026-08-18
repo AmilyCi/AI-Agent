@@ -1,275 +1,289 @@
-import { useState, useEffect, useRef } from 'react';
-import './App.css';
+import { useState, useEffect, useRef } from 'react'
+import './App.css'
 
 interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-  createdAt: string;
+  id: number
+  text: string
+  completed: boolean
+  createdAt: number
 }
 
-type FilterType = 'all' | 'active' | 'completed';
+type FilterType = 'all' | 'active' | 'completed'
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>(() => {
-    const saved = localStorage.getItem('todos');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
-  const [inputValue, setInputValue] = useState('');
-  const [filter, setFilter] = useState<FilterType>('all');
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState('');
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [addingId, setAddingId] = useState<number | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const editInputRef = useRef<HTMLInputElement>(null);
+    const saved = localStorage.getItem('react-todos')
+    return saved ? JSON.parse(saved) : []
+  })
+  const [inputValue, setInputValue] = useState('')
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingText, setEditingText] = useState('')
+  const [animatingIds, setAnimatingIds] = useState<Set<number>>(new Set())
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  // Persist to localStorage
+  // 持久化到 localStorage
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
+    localStorage.setItem('react-todos', JSON.stringify(todos))
+  }, [todos])
 
-  // Focus edit input when editing
-  useEffect(() => {
-    if (editingId !== null && editInputRef.current) {
-      editInputRef.current.focus();
-    }
-  }, [editingId]);
-
+  // 添加 Todo
   const addTodo = () => {
-    if (inputValue.trim() === '') return;
+    const text = inputValue.trim()
+    if (!text) return
+
     const newTodo: Todo = {
       id: Date.now(),
-      text: inputValue.trim(),
+      text,
       completed: false,
-      createdAt: new Date().toISOString(),
-    };
-    setTodos((prev) => [...prev, newTodo]);
-    setInputValue('');
-    setAddingId(newTodo.id);
-    setTimeout(() => setAddingId(null), 300);
-  };
+      createdAt: Date.now(),
+    }
 
+    setTodos(prev => [newTodo, ...prev])
+    setInputValue('')
+    inputRef.current?.focus()
+  }
+
+  // 删除 Todo（带动画）
   const deleteTodo = (id: number) => {
-    setDeletingId(id);
+    setAnimatingIds(prev => new Set(prev).add(id))
     setTimeout(() => {
-      setTodos((prev) => prev.filter((todo) => todo.id !== id));
-      setDeletingId(null);
-    }, 300);
-  };
+      setTodos(prev => prev.filter(todo => todo.id !== id))
+      setAnimatingIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    }, 300)
+  }
 
-  const toggleComplete = (id: number) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
+  // 切换完成状态
+  const toggleTodo = (id: number) => {
+    setTodos(prev =>
+      prev.map(todo =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
       )
-    );
-  };
+    )
+  }
 
-  const startEdit = (todo: Todo) => {
-    setEditingId(todo.id);
-    setEditValue(todo.text);
-  };
+  // 开始编辑
+  const startEditing = (todo: Todo) => {
+    setEditingId(todo.id)
+    setEditingText(todo.text)
+  }
 
-  const saveEdit = () => {
-    if (editingId === null) return;
-    if (editValue.trim() === '') {
-      setEditingId(null);
-      return;
-    }
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === editingId ? { ...todo, text: editValue.trim() } : todo
+  // 保存编辑
+  const saveEditing = () => {
+    if (editingId === null) return
+    const text = editingText.trim()
+    if (!text) {
+      deleteTodo(editingId)
+    } else {
+      setTodos(prev =>
+        prev.map(todo =>
+          todo.id === editingId ? { ...todo, text } : todo
+        )
       )
-    );
-    setEditingId(null);
-  };
+    }
+    setEditingId(null)
+    setEditingText('')
+  }
 
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditValue('');
-  };
+  // 清除已完成
+  const clearCompleted = () => {
+    const completedIds = todos.filter(t => t.completed).map(t => t.id)
+    setAnimatingIds(prev => new Set([...prev, ...completedIds]))
+    setTimeout(() => {
+      setTodos(prev => prev.filter(todo => !todo.completed))
+      setAnimatingIds(new Set())
+    }, 300)
+  }
 
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === 'active') return !todo.completed;
-    if (filter === 'completed') return todo.completed;
-    return true;
-  });
+  // 筛选
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed
+    if (filter === 'completed') return todo.completed
+    return true
+  })
 
-  const activeCount = todos.filter((todo) => !todo.completed).length;
-  const completedCount = todos.filter((todo) => todo.completed).length;
+  // 统计
+  const totalCount = todos.length
+  const activeCount = todos.filter(t => !t.completed).length
+  const completedCount = todos.filter(t => t.completed).length
 
+  // 键盘事件
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      addTodo();
+      if (editingId !== null) {
+        saveEditing()
+      } else {
+        addTodo()
+      }
     }
-  };
-
-  const handleEditKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      saveEdit();
-    } else if (e.key === 'Escape') {
-      cancelEdit();
+    if (e.key === 'Escape' && editingId !== null) {
+      setEditingId(null)
+      setEditingText('')
     }
-  };
+  }
 
   return (
-    <div className="app-container">
-      <div className="todo-card">
-        <h1 className="todo-title">✨ Todo List</h1>
-        
-        {/* Input Section */}
-        <div className="input-section">
+    <div className="app">
+      <div className="container">
+        {/* 头部 */}
+        <header className="header">
+          <h1 className="title">
+            <span className="title-icon">✨</span>
+            Todo List
+          </h1>
+          <p className="subtitle">高效管理你的每一天</p>
+        </header>
+
+        {/* 统计卡片 */}
+        <div className="stats-container">
+          <div className="stat-card stat-total">
+            <div className="stat-number">{totalCount}</div>
+            <div className="stat-label">全部</div>
+          </div>
+          <div className="stat-card stat-active">
+            <div className="stat-number">{activeCount}</div>
+            <div className="stat-label">进行中</div>
+          </div>
+          <div className="stat-card stat-completed">
+            <div className="stat-number">{completedCount}</div>
+            <div className="stat-label">已完成</div>
+          </div>
+        </div>
+
+        {/* 输入区域 */}
+        <div className="input-container">
           <input
             ref={inputRef}
             type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="添加新任务..."
             className="todo-input"
+            placeholder="添加新的待办事项..."
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-          <button onClick={addTodo} className="add-button">
+          <button className="add-btn" onClick={addTodo} disabled={!inputValue.trim()}>
+            <span className="btn-icon">+</span>
             添加
           </button>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="filter-tabs">
-          <button
-            onClick={() => setFilter('all')}
-            className={`filter-button ${filter === 'all' ? 'active' : ''}`}
-          >
-            全部 ({todos.length})
-          </button>
-          <button
-            onClick={() => setFilter('active')}
-            className={`filter-button ${filter === 'active' ? 'active' : ''}`}
-          >
-            进行中 ({activeCount})
-          </button>
-          <button
-            onClick={() => setFilter('completed')}
-            className={`filter-button ${filter === 'completed' ? 'active' : ''}`}
-          >
-            已完成 ({completedCount})
-          </button>
+        {/* 筛选栏 */}
+        <div className="filter-bar">
+          <div className="filter-buttons">
+            <button
+              className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+              onClick={() => setFilter('all')}
+            >
+              📋 全部
+            </button>
+            <button
+              className={`filter-btn ${filter === 'active' ? 'active' : ''}`}
+              onClick={() => setFilter('active')}
+            >
+              ⏳ 进行中
+            </button>
+            <button
+              className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
+              onClick={() => setFilter('completed')}
+            >
+              ✅ 已完成
+            </button>
+          </div>
+          {completedCount > 0 && (
+            <button className="clear-btn" onClick={clearCompleted}>
+              🗑️ 清除已完成
+            </button>
+          )}
         </div>
 
-        {/* Todo List */}
+        {/* Todo 列表 */}
         <div className="todo-list">
           {filteredTodos.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon">📝</span>
+              <div className="empty-icon">
+                {filter === 'all' ? '📝' : filter === 'active' ? '🎉' : '📭'}
+              </div>
               <p className="empty-text">
                 {filter === 'all'
-                  ? '暂无任务，添加一个吧！'
+                  ? '还没有待办事项，添加一个吧！'
                   : filter === 'active'
-                  ? '没有进行中的任务'
-                  : '没有已完成的任务'}
+                  ? '所有任务都已完成，太棒了！'
+                  : '还没有已完成的任务'}
               </p>
             </div>
           ) : (
-            filteredTodos.map((todo) => (
+            filteredTodos.map(todo => (
               <div
                 key={todo.id}
-                className={`todo-item ${
-                  todo.completed ? 'completed' : ''
-                } ${deletingId === todo.id ? 'deleting' : ''} ${
-                  addingId === todo.id ? 'adding' : ''
+                className={`todo-item ${todo.completed ? 'completed' : ''} ${
+                  animatingIds.has(todo.id) ? 'removing' : 'adding'
                 }`}
               >
-                {editingId === todo.id ? (
-                  <div className="edit-section">
+                <div className="todo-content">
+                  <button
+                    className={`checkbox ${todo.completed ? 'checked' : ''}`}
+                    onClick={() => toggleTodo(todo.id)}
+                  >
+                    {todo.completed && <span className="check-icon">✓</span>}
+                  </button>
+
+                  {editingId === todo.id ? (
                     <input
-                      ref={editInputRef}
                       type="text"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      onKeyDown={handleEditKeyDown}
                       className="edit-input"
+                      value={editingText}
+                      onChange={e => setEditingText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onBlur={saveEditing}
+                      autoFocus
                     />
-                    <button onClick={saveEdit} className="save-button">
-                      保存
-                    </button>
-                    <button onClick={cancelEdit} className="cancel-button">
-                      取消
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      className="checkbox"
-                      onClick={() => toggleComplete(todo.id)}
-                    >
-                      {todo.completed && <span>✓</span>}
-                    </div>
+                  ) : (
                     <span
-                      className={`todo-text ${
-                        todo.completed ? 'completed-text' : ''
-                      }`}
+                      className="todo-text"
+                      onDoubleClick={() => startEditing(todo)}
+                      title="双击编辑"
                     >
                       {todo.text}
                     </span>
-                    <div className="todo-actions">
+                  )}
+                </div>
+
+                <div className="todo-actions">
+                  {editingId !== todo.id && (
+                    <>
                       <button
-                        onClick={() => startEdit(todo)}
-                        className="action-button edit"
+                        className="action-btn edit-btn"
+                        onClick={() => startEditing(todo)}
                         title="编辑"
                       >
                         ✏️
                       </button>
                       <button
+                        className="action-btn delete-btn"
                         onClick={() => deleteTodo(todo.id)}
-                        className="action-button delete"
                         title="删除"
                       >
                         🗑️
                       </button>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
 
-        {/* Statistics */}
-        {todos.length > 0 && (
-          <div className="statistics">
-            <div className="stat-item">
-              <span className="stat-number">{todos.length}</span>
-              <span className="stat-label">总任务</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">{activeCount}</span>
-              <span className="stat-label">进行中</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">{completedCount}</span>
-              <span className="stat-label">已完成</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">
-                {todos.length > 0
-                  ? Math.round((completedCount / todos.length) * 100)
-                  : 0}
-                %
-              </span>
-              <span className="stat-label">完成率</span>
-            </div>
-          </div>
-        )}
+        {/* 底部提示 */}
+        <footer className="footer">
+          <p>💡 双击任务可编辑 · Enter 确认 · Esc 取消</p>
+        </footer>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

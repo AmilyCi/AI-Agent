@@ -1,4 +1,4 @@
-/* Global styles */
+/* 全局样式 */
 * {
   margin: 0;
   padding: 0;
@@ -6,83 +6,137 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* App Container with gradient background */
-.app-container {
+/* 主容器 - 渐变背景 */
+.app {
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background-attachment: fixed;
 }
 
-/* Todo Card */
-.todo-card {
+.container {
   width: 100%;
   max-width: 600px;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 24px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  animation: cardAppear 0.6s ease-out;
 }
 
-@keyframes cardAppear {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Title */
-.todo-title {
+/* 头部 */
+.header {
   text-align: center;
+  margin-bottom: 30px;
+}
+
+.title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #2d3748;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
-/* Input Section */
-.input-section {
+.title-icon {
+  font-size: 2.5rem;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(10deg); }
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 1rem;
+}
+
+/* 统计卡片 */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-total {
+  border-color: #667eea;
+}
+
+.stat-active {
+  border-color: #f6ad55;
+}
+
+.stat-completed {
+  border-color: #68d391;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* 输入区域 */
+.input-container {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 25px;
 }
 
 .todo-input {
   flex: 1;
-  padding: 14px 20px;
-  border: 2px solid #e0e0e0;
+  padding: 15px 20px;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
   font-size: 1rem;
-  outline: none;
   transition: all 0.3s ease;
-  background: #fafafa;
+  outline: none;
 }
 
 .todo-input:focus {
   border-color: #667eea;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.add-button {
-  padding: 14px 28px;
+.add-btn {
+  padding: 15px 30px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -91,164 +145,216 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.add-button:hover {
+.add-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.add-button:active {
+.add-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Filter Tabs */
-.filter-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  background: #f5f5f5;
-  padding: 6px;
-  border-radius: 12px;
+.add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.filter-button {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: #666;
+.btn-icon {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: #4a5568;
 }
 
-.filter-button:hover {
-  color: #333;
+.filter-btn:hover {
+  border-color: #667eea;
+  background: #f7fafc;
 }
 
-.filter-button.active {
-  background: white;
-  color: #667eea;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  font-weight: 600;
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Todo List */
+.clear-btn {
+  padding: 10px 20px;
+  background: #fed7d7;
+  border: 2px solid #fc8181;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #c53030;
+}
+
+.clear-btn:hover {
+  background: #fc8181;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 129, 129, 0.3);
+}
+
+/* Todo 列表 */
 .todo-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 24px;
-  min-height: 100px;
+  gap: 12px;
 }
 
-/* Todo Item */
 .todo-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: #fff;
-  border: 1px solid #f0f0f0;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: white;
   border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
+  border: 2px solid transparent;
   animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-item.removing {
+  animation: slideOut 0.3s ease-out;
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
     transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }
 
 .todo-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-  border-color: #e0e0e0;
+  transform: translateX(5px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
 }
 
-.todo-item.adding {
-  animation: addAnimation 0.3s ease-out;
+.todo-item.completed {
+  opacity: 0.7;
 }
 
-@keyframes addAnimation {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: #a0aec0;
 }
 
-.todo-item.deleting {
-  animation: deleteAnimation 0.3s ease-in forwards;
+.todo-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
 }
 
-@keyframes deleteAnimation {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(100px);
-  }
-}
-
-/* Checkbox */
+/* 复选框 */
 .checkbox {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  border: 2px solid #ddd;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #cbd5e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.8rem;
-  color: white;
+  flex-shrink: 0;
 }
 
 .checkbox:hover {
   border-color: #667eea;
+  transform: scale(1.1);
 }
 
-.todo-item.completed .checkbox {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
+.checkbox.checked {
+  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+  border-color: #48bb78;
 }
 
-/* Todo Text */
+.check-icon {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Todo 文本 */
 .todo-text {
-  flex: 1;
   font-size: 1rem;
-  color: #333;
+  color: #2d3748;
+  cursor: pointer;
+  transition: all 0.3s ease;
   word-break: break-word;
+}
+
+.todo-text:hover {
+  color: #667eea;
+}
+
+/* 编辑输入框 */
+.edit-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
   transition: all 0.3s ease;
 }
 
-.completed-text {
-  text-decoration: line-through;
-  color: #999;
-}
-
-/* Todo Actions */
+/* 操作按钮 */
 .todo-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -257,163 +363,95 @@ body {
   opacity: 1;
 }
 
-.action-button {
-  width: 32px;
-  height: 32px;
+.action-btn {
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: 8px;
-  background: #f5f5f5;
+  background: #f7fafc;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   transition: all 0.3s ease;
 }
 
-.action-button:hover {
-  transform: scale(1.1);
+.action-btn:hover {
+  transform: scale(1.15);
 }
 
-.action-button.edit:hover {
-  background: #e3f2fd;
+.edit-btn:hover {
+  background: #bee3f8;
 }
 
-.action-button.delete:hover {
-  background: #ffebee;
+.delete-btn:hover {
+  background: #fed7d7;
 }
 
-/* Edit Section */
-.edit-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.edit-input {
-  flex: 1;
-  padding: 10px 14px;
-  border: 2px solid #667eea;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-}
-
-.save-button,
-.cancel-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.save-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.save-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.cancel-button {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.cancel-button:hover {
-  background: #e0e0e0;
-}
-
-/* Empty State */
+/* 空状态 */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #999;
+  padding: 60px 20px;
+  color: #a0aec0;
 }
 
 .empty-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 12px;
-  opacity: 0.5;
+  font-size: 4rem;
+  margin-bottom: 15px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .empty-text {
-  font-size: 1rem;
+  font-size: 1.1rem;
+  color: #718096;
 }
 
-/* Statistics */
-.statistics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.stat-item {
+/* 底部 */
+.footer {
+  margin-top: 30px;
   text-align: center;
-  padding: 16px 8px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  color: #a0aec0;
+  font-size: 0.9rem;
 }
 
-.stat-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.stat-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #667eea;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #666;
-  font-weight: 500;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .todo-card {
-    padding: 24px;
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .container {
+    padding: 25px;
   }
 
-  .todo-title {
+  .title {
     font-size: 2rem;
   }
 
-  .input-section {
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+
+  .input-container {
     flex-direction: column;
   }
 
-  .add-button {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-buttons {
+    justify-content: center;
+  }
+
+  .clear-btn {
     width: 100%;
   }
 
-  .statistics {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filter-tabs {
-    flex-wrap: wrap;
-  }
-
-  .filter-button {
-    font-size: 0.8rem;
-    padding: 8px 12px;
+  .todo-actions {
+    opacity: 1;
   }
 }

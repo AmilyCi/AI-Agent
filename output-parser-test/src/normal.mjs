@@ -28,5 +28,5 @@ try {
     console.log(jsonResult);
 
 } catch (error) {
-
+    console.error("❌错误:", error.message);
 }

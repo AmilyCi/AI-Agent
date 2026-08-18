@@ -7,7 +7,7 @@ import { executeCommandTool, listDirectoryTool, readFileTool, writeFileTool } fr
 import chalk from 'chalk';
 
 const model = new ChatOpenAI({ 
-    modelName: "kimi-k2.6",
+    modelName: "qwen3.7-plus",
     apiKey: process.env.OPENAI_API_KEY,
     temperature: 0,
     configuration: {
@@ -88,7 +88,7 @@ async function runAgentWithTools(query, maxIterations = 30) {
 
             // console.log('=====parsedTools 解析成json=====', parsedTools)
 
-            if (parsedTools && parsedTools.length > 0) {
+          if (parsedTools && parsedTools.length > 0) {
                 for (const toolCall of parsedTools) {
                     if (toolCall.type === 'write_file' && toolCall.args?.content) {
                         const toolCallId = toolCall.id || toolCall.args.filePath || 'default';
