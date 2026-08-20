@@ -6,7 +6,10 @@ import { AiToolModule } from './ai-tool/ai-tool.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+import { UsersModule } from './users/users.module';
+import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -14,6 +17,18 @@ import { join } from 'path';
     AiToolModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'admin',
+      database: 'hello',
+      synchronize: true,
+      // connectorPackage: 'mysql2'
+      logging: true,
+      entities: [User],
     }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -36,6 +51,7 @@ import { join } from 'path';
         },
       }),
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

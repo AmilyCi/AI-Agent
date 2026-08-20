@@ -70,11 +70,13 @@ export class AiService {
     @Inject('QUERY_USER_TOOL') private readonly queryUserTool: any,
     @Inject('SEND_MAIL_TOOL') private readonly sendMailTool: any,
     @Inject('WEB_SEARCH_TOOL') private readonly webSearchTool: any,
+    @Inject('DB_USERS_CRUD_TOOL') private readonly dbUsersCrudTool: any,
   ) {
     this.modelWithTools = this.model.bindTools([
       this.queryUserTool,
       this.sendMailTool,
       this.webSearchTool,
+      this.dbUsersCrudTool,
     ]);
   }
 
@@ -85,6 +87,7 @@ export class AiService {
         1. query_user：查询用户信息（需要 userId 参数）
         2. send_mail：发送邮件（需要 to、subject 参数，可选 text、html）
         3. web_search：搜索互联网信息（需要 keyword 参数，可选 count 指定结果数量）
+        4. db_users_crud：对数据库 users 表执行增删改查（需要 action 参数，可选 id、name、email）
         在需要时调用工具完成任务，再用结果回答用户的问题
       `),
       new HumanMessage(query),
@@ -137,6 +140,16 @@ export class AiService {
               content: result,
             }),
           );
+        } else if (toolName === 'db_users_crud') {
+          const result = await this.dbUsersCrudTool.invoke(toolCall.args);
+
+          messages.push(
+            new ToolMessage({
+              tool_call_id: toolCallId,
+              name: toolName,
+              content: result,
+            }),
+          );
         }
       }
     }
@@ -149,6 +162,7 @@ export class AiService {
         1. query_user：查询用户信息（需要 userId 参数）
         2. send_mail：发送邮件（需要 to、subject 参数，可选 text、html）
         3. web_search：搜索互联网信息（需要 keyword 参数，可选 count 指定结果数量）
+        4. db_users_crud：对数据库 users 表执行增删改查（需要 action 参数，可选 id、name、email）
         在需要时调用工具完成任务，再用结果回答用户的问题
       `),
       new HumanMessage(query),
@@ -210,6 +224,16 @@ export class AiService {
           );
         } else if (toolName === 'web_search') {
           const result = await this.webSearchTool.invoke(toolCall.args);
+
+          messages.push(
+            new ToolMessage({
+              tool_call_id: toolCallId,
+              name: toolName,
+              content: result,
+            }),
+          );
+        } else if (toolName === 'db_users_crud') {
+          const result = await this.dbUsersCrudTool.invoke(toolCall.args);
 
           messages.push(
             new ToolMessage({
