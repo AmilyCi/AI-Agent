@@ -167,6 +167,7 @@ async function seedElasticsearch(indexName, rows) {
 
     const now = new Date().toISOString();
     console.log(`写入 ${rows.length} 条文档...`);
+    // TODO: 批量写入
     await client.bulk({
       refresh: true,
       operations: rows.flatMap((row) => {
@@ -302,7 +303,6 @@ async function main() {
 
     await seedElasticsearch(INDEX_NAME, ROWS);
     await seedMilvus(INDEX_NAME, ROWS, embeddings);
-
   } catch (error) {
     console.error('\n错误:', error.message);
     console.error(error.stack);

@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 
 const client = new Client({
-  node: 'http://localhost:9200'
+  node: 'http://localhost:9200',
 });
 
 const INDEX_NAME = 'travel_journal';
@@ -17,9 +17,9 @@ async function createDocument() {
       mood: 'focused',
       priority: 2,
       created_at: now,
-      updated_at: now
+      updated_at: now,
     },
-    refresh: true
+    refresh: true,
   });
 
   console.log('✅ 新增成功，ID =', res._id);
@@ -29,7 +29,7 @@ async function createDocument() {
 async function getDocument(docId) {
   const res = await client.get({
     index: INDEX_NAME,
-    id: docId
+    id: docId,
   });
   console.log('📖 查询结果:', res._source);
 }
@@ -41,9 +41,9 @@ async function updateDocument(docId) {
     doc: {
       note_body: '今天夜跑 6 公里，状态不错，拉伸后恢复很快。',
       tags: ['运动', '夜跑', '训练'],
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     },
-    refresh: true
+    refresh: true,
   });
   console.log('🔄 更新成功');
 }
@@ -55,15 +55,15 @@ async function searchDocuments() {
       match: {
         note_body: {
           query: '慢跑以及骑行的数据',
-          analyzer: 'ik_smart'
-        }
-      }
-    }
+          analyzer: 'ik_smart',
+        },
+      },
+    },
   });
 
   const rows = res.hits.hits.map((item) => ({
     id: item._id,
-    ...item._source
+    ...item._source,
   }));
   console.log('🔍 搜索结果:', rows);
 }
@@ -72,7 +72,7 @@ async function deleteDocument(docId) {
   await client.delete({
     index: INDEX_NAME,
     id: docId,
-    refresh: true
+    refresh: true,
   });
   console.log('🗑️ 删除成功');
 }
@@ -81,12 +81,11 @@ async function run() {
   // const docId = await createDocument();
   // await getDocument(docId);
   // console.log('docId', docId);
-  // const docId = 'DSH6S58BmAzPPGpN_CqK';
+  const docId = 'tUp5MqABNYBmoRNJvFSP';
   // await updateDocument(docId);
   // await getDocument(docId);
-  await searchDocuments();
-
-  // await deleteDocument(docId);
+  // await searchDocuments();
+  await deleteDocument(docId);
 }
 
 run().catch((err) => {
