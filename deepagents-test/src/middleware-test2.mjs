@@ -1,36 +1,38 @@
-import "dotenv/config";
-import { Command } from "@langchain/langgraph";
-import { z } from "zod";
-import { ChatOpenAI } from "@langchain/openai";
+import 'dotenv/config';
+import { Command } from '@langchain/langgraph';
+import { z } from 'zod';
+import { ChatOpenAI } from '@langchain/openai';
 import {
   createAgent,
   createMiddleware,
   HumanMessage,
   ToolMessage,
   tool,
-} from "langchain";
+} from 'langchain';
 
 const getCurrentTime = tool(() => new Date().toISOString(), {
-  name: "get_current_time",
-  description: "返回当前 UTC 时间的 ISO 8601 字符串",
+  name: 'get_current_time',
+  description: '返回当前 UTC 时间的 ISO 8601 字符串',
   schema: z.object({}),
 });
 
 /** 通过 middleware 注册工具，并用 wrapToolCall 包装执行 */
 const extendedToolsMiddleware = createMiddleware({
-  name: "ExtendedToolsMiddleware",
+  name: 'ExtendedToolsMiddleware',
   stateSchema: z.object({
     toolInvocationCount: z.number().default(0),
   }),
   tools: [getCurrentTime],
+  // wrapToolCall 包装工具调用，在工具调用前后输出日志
   wrapToolCall: async (request, handler) => {
     const toolName = request.tool?.name ?? request.toolCall.name;
     console.log(
       `[Tools] 即将执行: ${toolName}`,
-      "args:",
-      request.toolCall.args ?? {}
+      'args:',
+      request.toolCall.args ?? {},
     );
-    const result = await handler(request);
+    const result = await handler(request); // 执行工具
+    // 如果返回值不是 ToolMessage 实例，则直接返回
     if (!ToolMessage.isInstance(result)) return result;
 
     const wrapped = new ToolMessage({
@@ -40,10 +42,11 @@ const extendedToolsMiddleware = createMiddleware({
     });
     console.log(
       `[Tools] 执行完成: ${toolName}`,
-      typeof wrapped.content === "string"
+      typeof wrapped.content === 'string'
         ? wrapped.content.slice(0, 120)
-        : wrapped
+        : wrapped,
     );
+    // 更新 state 中的 toolInvocationCount
     return new Command({
       update: {
         toolInvocationCount: request.state.toolInvocationCount + 1,
@@ -53,7 +56,7 @@ const extendedToolsMiddleware = createMiddleware({
   },
   afterAgent: (state) => {
     console.log(
-      `[Tools] agent 结束，middleware 统计工具调用: ${state.toolInvocationCount} 次`
+      `[Tools] agent 结束，middleware 统计工具调用: ${state.toolInvocationCount} 次`,
     );
   },
 });
@@ -70,18 +73,15 @@ const model = new ChatOpenAI({
 const agent = createAgent({
   model,
   tools: [],
-  systemPrompt:
-    "你是一个助手。",
+  systemPrompt: '你是一个助手。',
   middleware: [extendedToolsMiddleware],
 });
 
-for (const text of [
-  "给我当前时间",
-]) {
-  console.log("\n用户:", text);
+for (const text of ['给我当前时间']) {
+  console.log('\n用户:', text);
   const { messages, toolInvocationCount } = await agent.invoke({
     messages: [new HumanMessage(text)],
   });
-  console.log("回复:", messages.at(-1)?.content);
-  console.log("toolInvocationCount:", toolInvocationCount);
+  console.log('回复:', messages.at(-1)?.content);
+  console.log('toolInvocationCount:', toolInvocationCount);
 }

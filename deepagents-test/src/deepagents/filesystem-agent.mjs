@@ -1,27 +1,32 @@
-import "dotenv/config";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { ChatOpenAI } from "@langchain/openai";
-import { createAgent, HumanMessage } from "langchain";
-import { createFilesystemMiddleware, FilesystemBackend } from "deepagents";
+import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { ChatOpenAI } from '@langchain/openai';
+import { createAgent, HumanMessage } from 'langchain';
+import { createFilesystemMiddleware, FilesystemBackend } from 'deepagents';
 
+// 工作区目录
 const workspaceDir = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  "workspace"
+  'workspace',
 );
-console.log('===workspaceDir===', workspaceDir)
+console.log('===workspaceDir===', workspaceDir);
 
 /** 先匹配先生效；未命中任何规则则默认允许 */
 const permissions = [
-  { operations: ["read"], paths: ["/secret.txt"], mode: "deny" },
-  { operations: ["write"], paths: ["/todo.md"], mode: "allow" },
-  { operations: ["write"], paths: ["/**"], mode: "deny" },
+  { operations: ['read'], paths: ['/secret.txt'], mode: 'deny' },
+  { operations: ['write'], paths: ['/todo.md'], mode: 'allow' },
+  { operations: ['write'], paths: ['/**'], mode: 'deny' },
 ];
 
 fs.rmSync(workspaceDir, { recursive: true, force: true });
 fs.mkdirSync(workspaceDir);
-fs.writeFileSync(path.join(workspaceDir, "secret.txt"), "机密：不得读取", "utf8");
+fs.writeFileSync(
+  path.join(workspaceDir, 'secret.txt'),
+  '机密：不得读取',
+  'utf8',
+);
 
 const model = new ChatOpenAI({
   model: process.env.MODEL_NAME,
@@ -34,45 +39,51 @@ const agent = createAgent({
   model,
   tools: [],
   systemPrompt:
-    "工作区根路径为 /。用 ls、read_file、write_file、edit_file 操作文件，路径以 / 开头。中文回答。",
+    '工作区根路径为 /。用 ls、read_file、write_file、edit_file 操作文件，路径以 / 开头。中文回答。',
   middleware: [
     createFilesystemMiddleware({
-      backend: new FilesystemBackend({ rootDir: workspaceDir, virtualMode: true }),
+      backend: new FilesystemBackend({
+        rootDir: workspaceDir,
+        virtualMode: true,
+      }),
       permissions,
     }),
   ],
 });
 
-console.log("工作区:", workspaceDir);
-console.log("权限:", JSON.stringify(permissions, null, 2));
+console.log('工作区:', workspaceDir);
+console.log('权限:', JSON.stringify(permissions, null, 2));
 
 async function run(label, prompt) {
-  console.log(`\n=== ${label} ===\n`, prompt, "\n");
+  console.log(`\n=== ${label} ===\n`, prompt, '\n');
   const { messages } = await agent.invoke(
     { messages: [new HumanMessage(prompt)] },
-    { recursionLimit: 20 }
+    { recursionLimit: 20 }, // 递归深度限制，避免无限循环
   );
   for (const m of messages) {
-    for (const t of m.tool_calls ?? []) console.log("→", t.name);
+    for (const t of m.tool_calls ?? []) console.log('→', t.name);
   }
-  console.log("回复:", messages.at(-1)?.content);
+  console.log('回复:', messages.at(-1)?.content);
 }
 
 async function expectDenied(label, prompt) {
-  console.log(`\n=== ${label}（预期拒绝）===\n`, prompt, "\n");
+  console.log(`\n=== ${label}（预期拒绝）===\n`, prompt, '\n');
   try {
-    await agent.invoke({ messages: [new HumanMessage(prompt)] }, { recursionLimit: 5 });
-    console.log("未触发拒绝（异常）");
+    await agent.invoke(
+      { messages: [new HumanMessage(prompt)] },
+      { recursionLimit: 5 },
+    );
+    console.log('未触发拒绝（异常）');
   } catch (e) {
     const msg = e.cause?.message ?? e.message;
-    console.log("✗", msg);
+    console.log('✗', msg);
   }
 }
 
 await run(
-  "允许的操作",
-  "write_file 创建 /todo.md（三条待办），edit_file 把第一条标为完成，ls /，一句话总结。"
+  '允许的操作',
+  'write_file 创建 /todo.md（三条待办），edit_file 把第一条标为完成，ls /，一句话总结。',
 );
 
-await expectDenied("禁止读", "只调用 read_file，路径 /secret.txt。");
-await expectDenied("禁止写", "只调用 write_file，路径 /hack.txt，内容 test。");
+await expectDenied('禁止读', '只调用 read_file，路径 /secret.txt。');
+await expectDenied('禁止写', '只调用 write_file，路径 /hack.txt，内容 test。');
