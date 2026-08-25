@@ -1,21 +1,21 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import dedent from "dedent";
-import { ChatOpenAI } from "@langchain/openai";
-import { createCodeInterpreterMiddleware } from "@langchain/quickjs";
-import { createDeepAgent, FilesystemBackend } from "deepagents";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import dedent from 'dedent';
+import { ChatOpenAI } from '@langchain/openai';
+import { createCodeInterpreterMiddleware } from '@langchain/quickjs';
+import { createDeepAgent, FilesystemBackend } from 'deepagents';
 
-import { webSearch } from "./tools/search.mjs";
+import { webSearch } from './tools/search.mjs';
 
 const projectDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "..",
+  '..',
 );
 
 const researcherSubAgent = {
-  name: "researcher",
+  name: 'researcher',
   description:
-    "通过联网搜索调研单一子主题。每次只分配一个子主题；多个独立子主题可并行启动多个调研员。",
+    '通过联网搜索调研单一子主题。每次只分配一个子主题；多个独立子主题可并行启动多个调研员。',
   systemPrompt: dedent`
     你是一名专业调研员，负责调研**一个**分配给你的子主题，并写入**一份**调研结果文件。
 
@@ -45,9 +45,9 @@ const researcherSubAgent = {
 };
 
 const editorSubAgent = {
-  name: "editor",
+  name: 'editor',
   description:
-    "审阅报告草稿的准确性、结构与完整性。在 /workspace/reports/draft_*.md 写好后使用。",
+    '审阅报告草稿的准确性、结构与完整性。在 /workspace/reports/draft_*.md 写好后使用。',
   systemPrompt: dedent`
     你是一名资深情报编辑，负责**审阅**报告草稿——**不要**亲自改写报告。
 
@@ -73,9 +73,9 @@ const editorSubAgent = {
 };
 
 const analystSubAgent = {
-  name: "analyst",
+  name: 'analyst',
   description:
-    "使用 eval REPL 进行数值计算与结构化数据分析。适用于计算、排名、同比对比或 JSON/CSV 分析。",
+    '使用 eval REPL 进行数值计算与结构化数据分析。适用于计算、排名、同比对比或 JSON/CSV 分析。',
   systemPrompt: dedent`
     你是一名数据分析师，所有计算必须通过 eval REPL 完成——**禁止**猜测数字。
 
@@ -146,18 +146,18 @@ const orchestratorPrompt = dedent`
 export function createIntelligenceDeskAgent() {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("未设置 OPENAI_API_KEY 环境变量");
+    throw new Error('未设置 OPENAI_API_KEY 环境变量');
   }
 
-  const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o";
+  const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o';
   const baseURL = process.env.OPENAI_BASE_URL?.trim() || undefined;
 
+  // 只能在 rootdir 下读写文件
   const backend = new FilesystemBackend({
     rootDir: projectDir,
     virtualMode: true,
   });
 
-  
   const chatModel = new ChatOpenAI({
     model,
     temperature: 0,
@@ -171,7 +171,7 @@ export function createIntelligenceDeskAgent() {
       : {}),
   });
 
-  Object.defineProperty(chatModel, "profile", {
+  Object.defineProperty(chatModel, 'profile', {
     get: () => ({ maxInputTokens: 8_000 }),
   });
 
@@ -179,9 +179,9 @@ export function createIntelligenceDeskAgent() {
     model: chatModel,
     systemPrompt: orchestratorPrompt,
     backend,
-    memory: [path.join(projectDir, "AGENTS.md")],
-    skills: ["/skills/"],
-    subagents: [researcherSubAgent, editorSubAgent, analystSubAgent]
+    memory: [path.join(projectDir, 'AGENTS.md')],
+    skills: ['/skills/'],
+    subagents: [researcherSubAgent, editorSubAgent, analystSubAgent],
   });
 }
 
